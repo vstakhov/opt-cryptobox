@@ -1,0 +1,46 @@
+#ifndef CRYPTOBOX_CONFIG_H_IN
+#define CRYPTOBOX_CONFIG_H_IN
+
+#cmakedefine HAVE_SYS_CDEFS_H    1
+#cmakedefine HAVE_MEMSET_S       1
+#cmakedefine HAVE_EXPLICIT_BZERO 1
+#cmakedefine HAVE_WEAK_SYMBOLS   1
+#cmakedefine HAVE_STDINT_H       1
+#cmakedefine HAVE_INTTYPES_H     1
+#cmakedefine HAVE_STDBOOL_H      1
+#cmakedefine HAVE_SYS_TYPES_H    1
+#cmakedefine HAVE_ENDIAN_H       1
+#cmakedefine HAVE_SYS_ENDIAN_H   1
+#cmakedefine HAVE_MACHINE_ENDIAN_H  1
+#cmakedefine HAVE_SYS_CDEFS_H    1
+
+#ifdef HAVE_SYS_CDEFS_H
+#include <sys/cdefs.h>
+#endif
+
+/* sys/param */
+#ifdef HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#endif
+
+/* stdint */
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#elif defined(HAVE_INTTYPES_H)
+#include <inttypes.h>
+#endif
+
+/* stdbool */
+#ifdef HAVE_STDBOOL_H
+#include <stdbool.h>
+#endif
+
+#ifndef ALIGN
+#if defined(_MSC_VER)
+# define ALIGN(x) __declspec(align(x))
+#else
+# define ALIGN(x) __attribute__((aligned(x)))
+#endif
+#endif
+
+#endif

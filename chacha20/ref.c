@@ -1,11 +1,11 @@
 #include "config.h"
+#include "../cryptobox.h"
 #include "chacha.h"
-#include "cryptobox.h"
 
 #if defined(HAVE_INT32)
 typedef uint32_t chacha_int32;
 #else
-typedef guint32 chacha_int32;
+typedef uint32_t chacha_int32;
 #endif
 
 /* interpret four 8 bit unsigned integers as a 32 bit unsigned integer in little endian */

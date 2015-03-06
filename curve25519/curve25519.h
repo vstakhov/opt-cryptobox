@@ -3,8 +3,8 @@
 
 #include "config.h"
 
-static const guchar curve25519_basepoint[32] = {9};
+static const unsigned char curve25519_basepoint[32] = {9};
 
-int curve25519 (guchar *mypublic, const guchar *secret, const guchar *basepoint);
+int curve25519 (unsigned char *mypublic, const unsigned char *secret, const unsigned char *basepoint);
 
 #endif

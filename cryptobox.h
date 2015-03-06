@@ -23,7 +23,9 @@
 #ifndef CRYPTOBOX_H_
 #define CRYPTOBOX_H_
 
-#include "config.h"
+#include <stddef.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 #define rspamd_cryptobox_NONCEBYTES 24
 #define rspamd_cryptobox_PKBYTES 32
@@ -31,11 +33,11 @@
 #define rspamd_cryptobox_MACBYTES 16
 #define rspamd_cryptobox_NMBYTES 32
 
-typedef guchar rspamd_pk_t[rspamd_cryptobox_PKBYTES];
-typedef guchar rspamd_sk_t[rspamd_cryptobox_SKBYTES];
-typedef guchar rspamd_sig_t[rspamd_cryptobox_MACBYTES];
-typedef guchar rspamd_nm_t[rspamd_cryptobox_NMBYTES];
-typedef guchar rspamd_nonce_t[rspamd_cryptobox_NONCEBYTES];
+typedef unsigned char rspamd_pk_t[rspamd_cryptobox_PKBYTES];
+typedef unsigned char rspamd_sk_t[rspamd_cryptobox_SKBYTES];
+typedef unsigned char rspamd_sig_t[rspamd_cryptobox_MACBYTES];
+typedef unsigned char rspamd_nm_t[rspamd_cryptobox_NMBYTES];
+typedef unsigned char rspamd_nonce_t[rspamd_cryptobox_NONCEBYTES];
 
 /**
  * Init cryptobox library
@@ -57,7 +59,7 @@ void rspamd_cryptobox_keypair (rspamd_pk_t pk, rspamd_sk_t sk);
  * @param sk local secret key
  * @param sig output signature
  */
-void rspamd_cryptobox_encrypt_inplace (guchar *data, gsize len,
+void rspamd_cryptobox_encrypt_inplace (unsigned char *data, size_t len,
 		const rspamd_nonce_t nonce,
 		const rspamd_pk_t pk, const rspamd_sk_t sk, rspamd_sig_t sig);
 
@@ -71,7 +73,7 @@ void rspamd_cryptobox_encrypt_inplace (guchar *data, gsize len,
  * @param sig signature input
  * @return TRUE if input has been verified successfully
  */
-gboolean rspamd_cryptobox_decrypt_inplace (guchar *data, gsize len,
+bool rspamd_cryptobox_decrypt_inplace (unsigned char *data, size_t len,
 		const rspamd_nonce_t nonce,
 		const rspamd_pk_t pk, const rspamd_sk_t sk, const rspamd_sig_t sig);
 
@@ -83,7 +85,7 @@ gboolean rspamd_cryptobox_decrypt_inplace (guchar *data, gsize len,
  * @param sk local secret key
  * @param sig output signature
  */
-void rspamd_cryptobox_encrypt_nm_inplace (guchar *data, gsize len,
+void rspamd_cryptobox_encrypt_nm_inplace (unsigned char *data, size_t len,
 		const rspamd_nonce_t nonce,
 		const rspamd_nm_t nm, rspamd_sig_t sig);
 
@@ -97,7 +99,7 @@ void rspamd_cryptobox_encrypt_nm_inplace (guchar *data, gsize len,
  * @param sig signature input
  * @return TRUE if input has been verified successfully
  */
-gboolean rspamd_cryptobox_decrypt_nm_inplace (guchar *data, gsize len,
+bool rspamd_cryptobox_decrypt_nm_inplace (unsigned char *data, size_t len,
 		 const rspamd_nonce_t nonce,
 		 const rspamd_nm_t nm, const rspamd_sig_t sig);
 
@@ -114,6 +116,6 @@ void rspamd_cryptobox_nm (rspamd_nm_t nm, const rspamd_pk_t pk, const rspamd_sk_
  * @param buf buffer to zero
  * @param buflen length of buffer
  */
-void rspamd_explicit_memzero (void * const buf, gsize buflen);
+void rspamd_explicit_memzero (void * const buf, size_t buflen);
 
 #endif /* CRYPTOBOX_H_ */

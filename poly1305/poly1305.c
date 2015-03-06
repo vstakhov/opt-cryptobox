@@ -24,9 +24,10 @@
  */
 
 #include "config.h"
-#include "cryptobox.h"
+#include "../cryptobox.h"
 #include "poly1305.h"
 #include "platform_config.h"
+#include <string.h>
 
 extern unsigned long cpu_config;
 
@@ -103,10 +104,10 @@ static int poly1305_is_aligned(const void *p)
 
 void poly1305_load(void)
 {
-	guint i;
+	unsigned int i;
 
 	if (cpu_config != 0) {
-		for (i = 0; i < G_N_ELEMENTS(poly1305_list); i++) {
+		for (i = 0; i < sizeof (poly1305_list) / sizeof (poly1305_list[0]); i++) {
 			if (poly1305_list[i].cpu_flags & cpu_config) {
 				poly1305_opt = &poly1305_list[i];
 				break;

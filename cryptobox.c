@@ -21,16 +21,18 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "config.h"
 #include "cryptobox.h"
 #include "platform_config.h"
 #include "chacha20/chacha.h"
 #include "poly1305/poly1305.h"
 #include "curve25519/curve25519.h"
-#include "ottery.h"
+
+#include <string.h>
 
 unsigned long cpu_config = 0;
 
-static const guchar n0[16] = {0};
+static const unsigned char n0[16] = {0};
 
 #ifdef HAVE_WEAK_SYMBOLS
 __attribute__((weak)) void
@@ -42,7 +44,7 @@ _dummy_symbol_to_prevent_lto(void * const pnt, const size_t len)
 #endif
 
 void
-rspamd_explicit_memzero(void * const pnt, const gsize len)
+rspamd_explicit_memzero(void * const pnt, const size_t len)
 {
 #if defined(HAVE_MEMSET_S)
 	if (memset_s (pnt, (rsize_t) len, 0, (rsize_t) len) != 0) {
@@ -55,7 +57,7 @@ rspamd_explicit_memzero(void * const pnt, const gsize len)
 	_dummy_symbol_to_prevent_lto (pnt, len);
 #else
 	volatile unsigned char *pnt_ = (volatile unsigned char *) pnt;
-	gsize i = (gsize) 0U;
+	size_t i = (size_t) 0U;
 	while (i < len) {
 		pnt_[i++] = 0U;
 	}
@@ -63,7 +65,7 @@ rspamd_explicit_memzero(void * const pnt, const gsize len)
 }
 
 static void
-rspamd_cryptobox_cpuid (gint cpu[4], gint info)
+rspamd_cryptobox_cpuid (int cpu[4], int info)
 {
 #if defined(__GNUC__) && (defined(__x86_64__) || defined(__i386__))
 	__asm__ __volatile__ (
@@ -83,7 +85,7 @@ rspamd_cryptobox_cpuid (gint cpu[4], gint info)
 void
 rspamd_cryptobox_init (void)
 {
-	gint cpu[4], nid;
+	int cpu[4], nid;
 
 	rspamd_cryptobox_cpuid (cpu, 0);
 	nid = cpu[0];
@@ -91,16 +93,16 @@ rspamd_cryptobox_init (void)
 
 	if (nid > 1) {
 		/* Check OSXSAVE bit first of all */
-		if ((cpu[2] & ((gint)1 << 9))) {
-			if ((cpu[3] & ((gint)1 << 26))) {
+		if ((cpu[2] & ((int)1 << 9))) {
+			if ((cpu[3] & ((int)1 << 26))) {
 				cpu_config |= CPUID_SSE2;
 			}
-			if ((cpu[2] & ((gint)1 << 28))) {
+			if ((cpu[2] & ((int)1 << 28))) {
 				cpu_config |= CPUID_AVX;
 			}
 			if (nid > 7) {
 				rspamd_cryptobox_cpuid (cpu, 7);
-				if ((cpu[1] & ((gint)1 <<  5))) {
+				if ((cpu[1] & ((int)1 <<  5))) {
 					cpu_config |= CPUID_AVX2;
 				}
 			}
@@ -126,8 +128,8 @@ rspamd_cryptobox_keypair (rspamd_pk_t pk, rspamd_sk_t sk)
 void
 rspamd_cryptobox_nm (rspamd_nm_t nm, const rspamd_pk_t pk, const rspamd_sk_t sk)
 {
-	guchar s[rspamd_cryptobox_PKBYTES];
-	guchar e[rspamd_cryptobox_SKBYTES];
+	unsigned char s[rspamd_cryptobox_PKBYTES];
+	unsigned char e[rspamd_cryptobox_SKBYTES];
 
 	memcpy (e, sk, rspamd_cryptobox_SKBYTES);
 	e[0] &= 248;
@@ -140,14 +142,14 @@ rspamd_cryptobox_nm (rspamd_nm_t nm, const rspamd_pk_t pk, const rspamd_sk_t sk)
 	rspamd_explicit_memzero (e, rspamd_cryptobox_SKBYTES);
 }
 
-void rspamd_cryptobox_encrypt_nm_inplace (guchar *data, gsize len,
+void rspamd_cryptobox_encrypt_nm_inplace (unsigned char *data, size_t len,
 		const rspamd_nonce_t nonce,
 		const rspamd_nm_t nm, rspamd_sig_t sig)
 {
 	poly1305_state mac_ctx;
-	guchar subkey[CHACHA_BLOCKBYTES];
+	unsigned char subkey[CHACHA_BLOCKBYTES];
 	chacha_state s;
-	gsize r;
+	size_t r;
 
 	xchacha_init (&s, (const chacha_key *)nm, (const chacha_iv24 *)nonce, 20);
 	memset (subkey, 0, sizeof (subkey));
@@ -164,16 +166,16 @@ void rspamd_cryptobox_encrypt_nm_inplace (guchar *data, gsize len,
 	rspamd_explicit_memzero (subkey, sizeof (subkey));
 }
 
-gboolean
-rspamd_cryptobox_decrypt_nm_inplace (guchar *data, gsize len,
+bool
+rspamd_cryptobox_decrypt_nm_inplace (unsigned char *data, size_t len,
 		const rspamd_nonce_t nonce, const rspamd_nm_t nm, const rspamd_sig_t sig)
 {
 	poly1305_state mac_ctx;
-	guchar subkey[CHACHA_BLOCKBYTES];
+	unsigned char subkey[CHACHA_BLOCKBYTES];
 	rspamd_sig_t mac;
 	chacha_state s;
-	gsize r;
-	gboolean ret = TRUE;
+	size_t r;
+	bool ret = true;
 
 	/* Generate MAC key */
 	xchacha_init (&s, (const chacha_key *)nm, (const chacha_iv24 *)nonce, 20);
@@ -185,7 +187,7 @@ rspamd_cryptobox_decrypt_nm_inplace (guchar *data, gsize len,
 	poly1305_finish (&mac_ctx, mac);
 
 	if (!poly1305_verify (mac, sig)) {
-		ret = FALSE;
+		ret = false;
 	}
 	else {
 		r = chacha_update (&s, data, data, len);
@@ -198,13 +200,13 @@ rspamd_cryptobox_decrypt_nm_inplace (guchar *data, gsize len,
 	return ret;
 }
 
-gboolean
-rspamd_cryptobox_decrypt_inplace (guchar *data, gsize len,
+bool
+rspamd_cryptobox_decrypt_inplace (unsigned char *data, size_t len,
 		const rspamd_nonce_t nonce,
 		const rspamd_pk_t pk, const rspamd_sk_t sk, const rspamd_sig_t sig)
 {
-	guchar nm[rspamd_cryptobox_NMBYTES];
-	gboolean ret;
+	unsigned char nm[rspamd_cryptobox_NMBYTES];
+	bool ret;
 
 	rspamd_cryptobox_nm (nm, pk, sk);
 	ret = rspamd_cryptobox_decrypt_nm_inplace (data, len, nonce, nm, sig);
@@ -215,11 +217,11 @@ rspamd_cryptobox_decrypt_inplace (guchar *data, gsize len,
 }
 
 void
-rspamd_cryptobox_encrypt_inplace (guchar *data, gsize len,
+rspamd_cryptobox_encrypt_inplace (unsigned char *data, size_t len,
 		const rspamd_nonce_t nonce,
 		const rspamd_pk_t pk, const rspamd_sk_t sk, rspamd_sig_t sig)
 {
-	guchar nm[rspamd_cryptobox_NMBYTES];
+	unsigned char nm[rspamd_cryptobox_NMBYTES];
 
 	rspamd_cryptobox_nm (nm, pk, sk);
 	rspamd_cryptobox_encrypt_nm_inplace (data, len, nonce, nm, sig);
