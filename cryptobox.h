@@ -118,4 +118,6 @@ void rspamd_cryptobox_nm (rspamd_nm_t nm, const rspamd_pk_t pk, const rspamd_sk_
  */
 void rspamd_explicit_memzero (void * const buf, size_t buflen);
 
+void rspamd_randombytes (void * const buf, const size_t size);
+
 #endif /* CRYPTOBOX_H_ */

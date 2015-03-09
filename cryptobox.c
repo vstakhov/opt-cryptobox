@@ -33,6 +33,8 @@
 unsigned long cpu_config = 0;
 
 static const unsigned char n0[16] = {0};
+extern void randombytes_sysrandom_init (void);
+extern void randombytes_sysrandom_buf (void * const buf, const size_t size);
 
 #ifdef HAVE_WEAK_SYMBOLS
 __attribute__((weak)) void
@@ -81,6 +83,11 @@ rspamd_cryptobox_cpuid (int cpu[4], int info)
 #endif
 }
 
+void
+rspamd_randombytes (void * const buf, const size_t size)
+{
+	randombytes_sysrandom_buf (buf, size);
+}
 
 void
 rspamd_cryptobox_init (void)
@@ -109,15 +116,15 @@ rspamd_cryptobox_init (void)
 		}
 	}
 
-
 	chacha_load ();
 	poly1305_load ();
+	randombytes_sysrandom_init ();
 }
 
 void
 rspamd_cryptobox_keypair (rspamd_pk_t pk, rspamd_sk_t sk)
 {
-	ottery_rand_bytes (sk, rspamd_cryptobox_SKBYTES);
+	randombytes_sysrandom_buf (sk, rspamd_cryptobox_SKBYTES);
 	sk[0] &= 248;
 	sk[31] &= 127;
 	sk[31] |= 64;

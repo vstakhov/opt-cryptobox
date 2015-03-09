@@ -22,6 +22,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stddef.h>
+#include <string.h>
+
 #include "config.h"
 #include "../cryptobox.h"
 #include "chacha.h"
@@ -95,7 +98,7 @@ chacha_load (void)
 	unsigned int i;
 
 	if (cpu_config != 0) {
-		for (i = 0; i < G_N_ELEMENTS (chacha_list); i ++) {
+		for (i = 0; i < sizeof (chacha_list) / sizeof (chacha_list[0]); i ++) {
 			if (chacha_list[i].cpu_flags & cpu_config) {
 				chacha_impl = &chacha_list[i];
 				break;
