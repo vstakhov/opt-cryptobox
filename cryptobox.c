@@ -29,6 +29,12 @@
 #include "curve25519/curve25519.h"
 #include "blake2/blake2.h"
 
+#ifdef HAVE_MEMSET_S
+/* Darwin requirement */
+#define __STDC_WANT_LIB_EXT1__ 1
+#endif
+
+#include <stdlib.h>
 #include <string.h>
 
 unsigned long cpu_config = 0;
@@ -51,7 +57,7 @@ rspamd_explicit_memzero(void * const pnt, const size_t len)
 {
 #if defined(HAVE_MEMSET_S)
 	if (memset_s (pnt, (rsize_t) len, 0, (rsize_t) len) != 0) {
-		g_assert (0);
+		abort ();
 	}
 #elif defined(HAVE_EXPLICIT_BZERO)
 	explicit_bzero (pnt, len);
