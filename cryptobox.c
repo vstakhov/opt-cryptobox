@@ -27,6 +27,7 @@
 #include "chacha20/chacha.h"
 #include "poly1305/poly1305.h"
 #include "curve25519/curve25519.h"
+#include "blake2/blake2.h"
 
 #include <string.h>
 
@@ -233,4 +234,15 @@ rspamd_cryptobox_encrypt_inplace (unsigned char *data, size_t len,
 	rspamd_cryptobox_nm (nm, pk, sk);
 	rspamd_cryptobox_encrypt_nm_inplace (data, len, nonce, nm, sig);
 	rspamd_explicit_memzero (nm, sizeof (nm));
+}
+
+void
+rspamd_cryptobox_hash (void * const buf, const size_t size,
+    rspamd_hash_t out)
+{
+	blake2b_state st;
+
+	blake2b_init (&st, rspamd_cryptobox_HASHBYTES);
+	blake2b_update (&st, buf, size);
+	blake2b_final (&st, out, rspamd_cryptobox_HASHBYTES);
 }

@@ -32,12 +32,14 @@
 #define rspamd_cryptobox_SKBYTES 32
 #define rspamd_cryptobox_MACBYTES 16
 #define rspamd_cryptobox_NMBYTES 32
+#define rspamd_cryptobox_HASHBYTES 64
 
 typedef unsigned char rspamd_pk_t[rspamd_cryptobox_PKBYTES];
 typedef unsigned char rspamd_sk_t[rspamd_cryptobox_SKBYTES];
 typedef unsigned char rspamd_sig_t[rspamd_cryptobox_MACBYTES];
 typedef unsigned char rspamd_nm_t[rspamd_cryptobox_NMBYTES];
 typedef unsigned char rspamd_nonce_t[rspamd_cryptobox_NONCEBYTES];
+typedef unsigned char rspamd_hash_t[rspamd_cryptobox_HASHBYTES];
 
 /**
  * Init cryptobox library
@@ -119,5 +121,14 @@ void rspamd_cryptobox_nm (rspamd_nm_t nm, const rspamd_pk_t pk, const rspamd_sk_
 void rspamd_explicit_memzero (void * const buf, size_t buflen);
 
 void rspamd_randombytes (void * const buf, const size_t size);
+
+/**
+ * Calculates hash for the input data (currently blake2b hash)
+ * @param buf buffer to calculate checksum
+ * @param size size of buffer
+ * @param out output buffer
+ */
+void rspamd_cryptobox_hash (void * const buf, const size_t size,
+    rspamd_hash_t out);
 
 #endif /* CRYPTOBOX_H_ */
